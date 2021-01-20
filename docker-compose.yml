@@ -1,0 +1,39 @@
+version: "3"
+services:
+  pg_master_1:
+     build: ./master
+     ports:
+         - "5445:5432"
+     volumes:
+         - mdata:/var/lib/postgresql/data
+     environment:
+         - POSTGRES_USER=posgresql
+         - POSTGRES_PASSWORD=123456
+         - POSTGRES_DB=db_app
+         - PG_REP_USER=rep
+         - PG_REP_PASSWORD=123456
+     networks:
+           - bridge-docker
+     restart: always
+  pg_slave_1:
+     build: ./slave
+     ports:
+         - "5446:5432"
+     volumes:
+         - sdata:/var/lib/postgresql/data
+     environment:
+         - POSTGRES_USER=posgresql
+         - POSTGRES_PASSWORD=123456
+         - POSTGRES_DB=db_app
+         - PG_REP_USER=rep
+         - PG_REP_PASSWORD=123456
+     networks:
+            - bridge-docker
+     restart: always
+volumes:
+  mdata:
+  sdata:
+networks:
+  bridge-docker:
+    external:
+      name: bridge-docker
