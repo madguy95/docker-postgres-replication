@@ -21,7 +21,7 @@ Then you simply have to run the docker-compose up command (with  -d args to run 
 You can go https://www.optimadata.nl/blogs/1/nlm8ci-how-to-run-postgres-on-docker-part-3 if you want to know more
 
 ### Note: 
-   - In current time, i'm using postgre ver 12.5 and it's has some different config to previous version.
+   - At the moment I am using postgresql ver 12.5 and it has some different configuration from previous version..
   
 How was the replication configuration handled until PostgreSQL 11?
 Until PostgreSQL 11, we must create a file named: recovery.conf that contains the following minimalistic parameters. If the standby_mode is ON, it is considered to be a standby.
