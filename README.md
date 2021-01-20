@@ -36,3 +36,6 @@ So the first difference between PostgreSQL 12 and earlier (until PostgreSQL 11) 
 ### Reference Docs
   - https://www.percona.com/blog/2019/10/11/how-to-set-up-streaming-replication-in-postgresql-12/
   - https://www.2ndquadrant.com/en/blog/replication-configuration-changes-in-postgresql-12/
+
+### Related topics
+  - synchronous_commit https://www.postgresql.org/docs/12/runtime-config-wal.html
