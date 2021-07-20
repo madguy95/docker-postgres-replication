@@ -20,6 +20,62 @@ Then you simply have to run the docker-compose up command (with  -d args to run 
 
 You can go https://www.optimadata.nl/blogs/1/nlm8ci-how-to-run-postgres-on-docker-part-3 if you want to know more
 
+POSTGRES_USER: username db
+POSTGRES_PASSWORD: password DB
+POSTGRES_DB: Database name
+POSTGRES_MASTER: address master node
+PG_STANDBY: enter standby mode (by create standby.signal in folder ${PGDATA})
+PG_REP_USER: username replicator
+PG_REP_PASSWORD: password replicator
+
+### ISSUE
+
+##### 1
+if postgres master server down . we can pormote slave  to new master 
+```sh
+$ docker exec -it container_id bash
+su postgres
+pg_ctl promote -D ${PGDATA}
+```
+Restart master server and convert to new slave 
+- add PG_STANDBY: true to pg_master service 
+- restart pg_master service
+
+You also can create a new slave from image slave 
+```yml
+  pg_slave2:
+     build: ./slave
+     ports:
+         - "5447:5432"
+     volumes:
+         - s2data:/var/lib/postgresql/data
+     environment:
+         - POSTGRES_USER=postgres
+         - POSTGRES_PASSWORD=123456
+         - POSTGRES_DB=db_app
+         - POSTGRES_MASTER=pg_slave
+         - PG_STANDBY=true
+         - PG_REP_USER=rep
+         - PG_REP_PASSWORD=123456
+     networks:
+        - bridge-docker
+     restart: always
+```
+
+##### 2
+WAL not reached or not the same 
+caused: WAL on master and slave not in the same point/
+solution: use pg_rewind to synchronize master and slave
+```sh
+docker run -it -d --name pg_rewind --network=host \
+--env="PGDATA=/var/lib/postgresql/data/pgdata" \
+--env="POSTGRES_HOST_AUTH_METHOD=trust" \
+--volume=/home/data/master-data:/var/lib/postgresql/data:rw \
+postgres:12.5 \
+pg_rewind --target-pgdata=/var/lib/postgresql/data/ --source-server='host=address_master port=5445 dbname=db_app user=rep password=123456'
+```
+/home/data/master-data : path to volume data need to sync WAL on host
+
 ### Note: 
    - At the moment I am using postgresql ver 12.5 and it has some different configuration from previous version..
   
