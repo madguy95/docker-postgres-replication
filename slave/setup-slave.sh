@@ -80,9 +80,9 @@ if [ ! -z $PG_STANDBY ]; then
 	su postgres -c "touch $PGDATA/standby.signal"
 fi
 
-if [ ! -z $PG_REWIND ]; then
+if [ -s "$PGDATA/PG_VERSION" ] && [ ! -z $PG_REWIND ] && [ ! -z $PG_STANDBY ]; then
 	echo "pg_rewind synchonorize WAL"
-	su postgres -c "pg_rewind --target-pgdata=$PGDATA --source-server='host=${POSTGRES_MASTER} port=5432 dbname=$POSTGRES_DB user=$PG_REP_USER password=$PG_REP_PASSWORD'"
+	su postgres -c "pg_rewind --target-pgdata=$PGDATA --source-server='host=${POSTGRES_MASTER} port=5432 dbname=$POSTGRES_DB user=$POSTGRES_USER password=$POSTGRES_PASSWORD'"
 fi
 sed -i 's/wal_level = hot_standby/wal_level = replica/g' ${PGDATA}/postgresql.conf
 exec "$@"

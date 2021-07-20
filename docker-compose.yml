@@ -12,7 +12,8 @@ services:
          - POSTGRES_PASSWORD=123456
          - POSTGRES_DB=db_app
          - POSTGRES_MASTER=pg_slave
-        #  - PG_STANDBY=true
+        # - PG_STANDBY=true #enable if switch to standby
+        # - PG_REWIND=true #enable if need sync WAL
          - PG_REP_USER=rep
          - PG_REP_PASSWORD=123456
      networks:

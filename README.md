@@ -25,6 +25,7 @@ POSTGRES_PASSWORD: password DB
 POSTGRES_DB: Database name
 POSTGRES_MASTER: address master node
 PG_STANDBY: enter standby mode (by create standby.signal in folder ${PGDATA})
+PG_REWIND: enable pg_rewind sync WAL
 PG_REP_USER: username replicator
 PG_REP_PASSWORD: password replicator
 
@@ -72,10 +73,10 @@ docker run -it -d --name pg_rewind --network=host \
 --env="POSTGRES_HOST_AUTH_METHOD=trust" \
 --volume=/home/data/master-data:/var/lib/postgresql/data:rw \
 postgres:12.5 \
-pg_rewind --target-pgdata=/var/lib/postgresql/data/ --source-server='host=address_master port=5445 dbname=db_app user=rep password=123456'
+pg_rewind --target-pgdata=/var/lib/postgresql/data/ --source-server='host=address_master port=5445 dbname=db_app user=postgres password=123456'
 ```
 /home/data/master-data : path to volume data need to sync WAL on host
-
+or set PG_REWIND = true
 ### Note: 
    - At the moment I am using postgresql ver 12.5 and it has some different configuration from previous version..
   
