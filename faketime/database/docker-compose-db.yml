@@ -1,0 +1,112 @@
+version: "3"
+
+services:
+  # Database master
+  pg_master:
+     build: ./postgre/master
+     container_name: postgre_master
+     ports:
+         - "${POSTGRES_MASTER}:5432"
+     volumes:
+         - mdata:/var/lib/postgresql/data
+         - "/etc/localtime:/etc/localtime:ro"
+         - "/etc/timezone:/etc/timezone:ro"
+     environment:
+         - FAKETIME=${FAKETIME}
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - POSTGRES_DB=${POSTGRES_DB}
+         - PG_REP_USER=${PG_REP_USER}
+         - PG_REP_PASSWORD=${PG_REP_PASSWORD}
+     networks:
+         - db-net
+     restart: always
+  # Database slave   
+  pg_slave:
+     build: ./postgre/slave
+     container_name: postgre_slave
+     ports:
+         - "${POSTGRES_SLAVE}:5432"
+     volumes:
+         - sdata:/var/lib/postgresql/data
+         - "/etc/localtime:/etc/localtime:ro"
+         - "/etc/timezone:/etc/timezone:ro"
+     environment:
+         - FAKETIME=${FAKETIME}
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - POSTGRES_DB=${POSTGRES_DB}
+         - PG_REP_USER=${PG_REP_USER}
+         - PG_REP_PASSWORD=${PG_REP_PASSWORD}
+     networks:
+         - db-net
+     restart: always
+  # redis    
+  redis:
+    build: ./redis
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 512mb
+    environment:
+      - FAKETIME=${FAKETIME}
+    ports:
+      - '${REDIS_PORT}:6379'
+    networks:
+      - db-net
+  # Mongo db
+  mongo:
+    image: mongo:3.6
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    ports:
+      - '${MONGO_PORT}:27017'
+    environment:
+      FAKETIME: ${FAKETIME}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - db-net
+      
+volumes:
+  mdata:
+    name: mdata
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PG_MASTER_PATH}
+  sdata:
+    name: sdata
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PG_SLAVE_PATH}
+
+  redis-data:
+    name: redis-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${REDIS_DATA_PATH}
+
+  mongo-data:
+    name: mongo-data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MONGO_DATA_PATH}
+networks:
+  db-net:
+    driver: bridge
+    name: db-net
